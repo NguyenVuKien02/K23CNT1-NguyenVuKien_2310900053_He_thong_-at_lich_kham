@@ -1,0 +1,35 @@
+@model (double Rating, int ReviewCount)
+@{
+    var rating = Math.Clamp(Model.Rating, 0, 5);
+    var fullStars = (int)Math.Floor(rating);
+    var hasHalfStar = (rating - fullStars) >= 0.5;
+}
+
+<div class="pk-rating-row d-inline-flex align-items-center flex-wrap gap-1" aria-label="@(Model.ReviewCount > 0 ? $"Đánh giá {rating:0.0} trên 5 sao từ {Model.ReviewCount} lượt đánh giá" : "Chưa có đánh giá")">
+    <span class="pk-rating-stars d-inline-flex align-items-center" aria-hidden="true">
+        @for (var i = 1; i <= 5; i++)
+        {
+            if (i <= fullStars)
+            {
+                <i class="bi bi-star-fill"></i>
+            }
+            else if (i == fullStars + 1 && hasHalfStar)
+            {
+                <i class="bi bi-star-half"></i>
+            }
+            else
+            {
+                <i class="bi bi-star text-secondary opacity-50"></i>
+            }
+        }
+    </span>
+    @if (Model.ReviewCount > 0)
+    {
+        <span class="fw-semibold text-dark small">@rating.ToString("0.0")</span>
+        <span class="text-muted small">(@Model.ReviewCount đánh giá)</span>
+    }
+    else
+    {
+        <span class="text-muted small">Chưa có đánh giá</span>
+    }
+</div>

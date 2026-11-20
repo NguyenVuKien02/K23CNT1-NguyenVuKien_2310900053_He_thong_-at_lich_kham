@@ -1,0 +1,62 @@
+@model CaLamViecFormViewModel
+@{
+    ViewData["Title"] = "Thêm ca làm việc";
+}
+
+<div class="mb-3">
+    <a asp-area="Admin" asp-controller="CaLamViec" asp-action="Index" class="btn btn-secondary btn-sm">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        <span>Quay lại danh sách</span>
+    </a>
+</div>
+
+<div class="card" style="max-width: 720px;">
+    <div class="card-header bg-white py-3">
+        <h2 class="h5 fw-bold mb-0">Thêm ca làm việc mới</h2>
+    </div>
+    <div class="card-body p-4">
+        <form method="post" asp-area="Admin" asp-controller="CaLamViec" asp-action="Create" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="TenCa" class="form-label fw-medium"></label>
+                <span class="text-danger">*</span>
+                <input asp-for="TenCa" class="form-control" placeholder="Ví dụ: Ca sáng, Ca chiều, Ca tối..." />
+                <span asp-validation-for="TenCa" class="text-danger small"></span>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-12 col-md-4">
+                    <label asp-for="GioBatDau" class="form-label fw-medium"></label>
+                    <span class="text-danger">*</span>
+                    <input asp-for="GioBatDau" asp-format="{0:HH:mm}" type="time" class="form-control" />
+                    <span asp-validation-for="GioBatDau" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label asp-for="GioKetThuc" class="form-label fw-medium"></label>
+                    <span class="text-danger">*</span>
+                    <input asp-for="GioKetThuc" asp-format="{0:HH:mm}" type="time" class="form-control" />
+                    <span asp-validation-for="GioKetThuc" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label asp-for="ThoiLuongKhungGio" class="form-label fw-medium"></label>
+                    <span class="text-danger">*</span>
+                    <input asp-for="ThoiLuongKhungGio" type="number" min="5" max="240" step="5" class="form-control" />
+                    <span asp-validation-for="ThoiLuongKhungGio" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg" aria-hidden="true"></i>
+                    <span>Lưu ca làm việc</span>
+                </button>
+                <a asp-area="Admin" asp-controller="CaLamViec" asp-action="Index" class="btn btn-secondary">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

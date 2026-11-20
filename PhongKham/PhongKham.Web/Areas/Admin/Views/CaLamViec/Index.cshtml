@@ -1,0 +1,117 @@
+@model CaLamViecAdminIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý ca làm việc";
+    var ds = Model.DanhSach;
+}
+
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4">
+    <div>
+        <h2 class="h4 fw-bold mb-1">Danh mục ca làm việc</h2>
+        <p class="text-muted small mb-0">Thiết lập khung giờ ca khám và thời lượng mỗi khung đặt lịch.</p>
+    </div>
+    <a asp-area="Admin" asp-controller="CaLamViec" asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+        <span>Thêm ca làm việc</span>
+    </a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body p-3">
+        <form method="get" asp-area="Admin" asp-controller="CaLamViec" asp-action="Index" class="row g-2 align-items-center">
+            <div class="col-12 col-md">
+                <input type="search" name="tuKhoa" value="@Model.TuKhoa" class="form-control"
+                       placeholder="Tìm theo tên ca làm việc..." aria-label="Tìm kiếm ca làm việc" />
+            </div>
+            <div class="col-12 col-md-auto d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1 flex-md-grow-0">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <span>Tìm kiếm</span>
+                </button>
+                @if (Model.CoBoLoc)
+                {
+                    <a asp-area="Admin" asp-controller="CaLamViec" asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                        <span>Đặt lại</span>
+                    </a>
+                }
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">Danh sách ca làm việc</span>
+        <span class="small text-muted">Tổng: <strong class="text-dark">@ds.TotalCount</strong> ca làm việc</span>
+    </div>
+    @if (ds.Items.Count == 0)
+    {
+        <div class="card-body text-center py-5">
+            <i class="bi bi-clock fs-1 text-muted opacity-50 d-block mb-2" aria-hidden="true"></i>
+            <p class="text-muted mb-0">Không có ca làm việc nào phù hợp.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 pk-price-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">#</th>
+                        <th>Tên ca</th>
+                        <th style="width: 170px;">Khung giờ</th>
+                        <th class="text-center" style="width: 160px;">Thời lượng / lượt</th>
+                        <th class="text-center" style="width: 140px;">Số khung giờ</th>
+                        <th class="text-center" style="width: 130px;">Lịch đã gán</th>
+                        <th class="text-end" style="width: 120px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < ds.Items.Count; i++)
+                    {
+                        var item = ds.Items[i];
+                        var stt = ds.StartItem + i;
+                        <tr>
+                            <td class="text-muted">@stt</td>
+                            <td class="fw-semibold text-dark">@item.TenCa</td>
+                            <td class="text-nowrap">
+                                <span class="badge rounded-pill pk-shift-pill">
+                                    @item.GioBatDau.ToString("HH:mm") – @item.GioKetThuc.ToString("HH:mm")
+                                </span>
+                            </td>
+                            <td class="text-center">@item.ThoiLuongKhungGio phút</td>
+                            <td class="text-center">
+                                <span class="badge rounded-pill pk-badge-teal">@item.SoKhungGio khung</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge rounded-pill pk-badge-soft">@item.SoLichLamViec</span>
+                            </td>
+                            <td class="text-end">
+                                <a asp-area="Admin" asp-controller="CaLamViec" asp-action="Edit" asp-route-id="@item.Id"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                                    <span>Sửa</span>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<partial name="_AdminPaginationPartial" model="@(new AdminPaginationViewModel
+{
+    PageIndex = ds.PageIndex,
+    TotalPages = ds.TotalPages,
+    TotalCount = ds.TotalCount,
+    StartItem = ds.StartItem,
+    EndItem = ds.EndItem,
+    ItemLabel = "ca làm việc",
+    Controller = "CaLamViec",
+    RouteValues = new Dictionary<string, string?>
+    {
+        ["tuKhoa"] = Model.TuKhoa
+    }
+})" />

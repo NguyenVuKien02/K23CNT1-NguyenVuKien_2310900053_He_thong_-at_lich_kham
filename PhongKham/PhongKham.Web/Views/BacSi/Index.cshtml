@@ -1,0 +1,184 @@
+@model PhongKham.Web.ViewModels.Public.BacSiIndexViewModel
+@{
+    ViewData["Title"] = "Đội ngũ bác sĩ";
+    var danhSach = Model.DanhSachBacSi;
+    string BuildPageUrl(int targetPage)
+    {
+        var query = new List<string>();
+        if (Model.ChuyenKhoaId.HasValue)
+        {
+            query.Add($"chuyenKhoaId={Model.ChuyenKhoaId.Value}");
+        }
+        if (!string.IsNullOrWhiteSpace(Model.TuKhoa))
+        {
+            query.Add($"tuKhoa={Uri.EscapeDataString(Model.TuKhoa)}");
+        }
+        if (Model.NgayKham.HasValue)
+        {
+            query.Add($"ngayKham={Model.NgayKham.Value:yyyy-MM-dd}");
+        }
+        if (targetPage > 1)
+        {
+            query.Add($"page={targetPage}");
+        }
+
+        return query.Count == 0 ? "/bac-si" : $"/bac-si?{string.Join("&", query)}";
+    }
+}
+
+<nav aria-label="Breadcrumb" class="mb-3">
+    <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Trang chủ</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Bác sĩ</li>
+    </ol>
+</nav>
+
+<div class="pk-page-header mb-4">
+    <h1 class="h3 fw-bold mb-1">Đội ngũ bác sĩ</h1>
+    <p class="text-muted mb-0">
+        Tra cứu bác sĩ theo chuyên khoa, tên bác sĩ hoặc ngày có lịch khám và xem đánh giá thực tế từ bệnh nhân.
+    </p>
+</div>
+
+<!-- Filter Card -->
+<div class="card mb-4">
+    <div class="card-body p-3 p-md-4">
+        <form method="get" action="/bac-si" class="row g-3 align-items-end">
+            <div class="col-12 col-md-4">
+                <label for="filterChuyenKhoa" class="form-label fw-semibold small text-muted mb-1">Chuyên khoa</label>
+                <select id="filterChuyenKhoa" name="chuyenKhoaId" class="form-select">
+                    <option value="">Tất cả chuyên khoa</option>
+                    @foreach (var ck in Model.ChuyenKhoas)
+                    {
+                        <option value="@ck.Id" selected="@(Model.ChuyenKhoaId == ck.Id)">
+                            @ck.Name (@ck.SoBacSi)
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-12 col-md-4">
+                <label for="filterTuKhoa" class="form-label fw-semibold small text-muted mb-1">Tên bác sĩ / học vị</label>
+                <input id="filterTuKhoa"
+                       name="tuKhoa"
+                       type="search"
+                       value="@Model.TuKhoa"
+                       class="form-control"
+                       placeholder="Nhập tên bác sĩ..." />
+            </div>
+            <div class="col-12 col-sm-6 col-md-2">
+                <label for="filterNgayKham" class="form-label fw-semibold small text-muted mb-1">Ngày có lịch</label>
+                <input id="filterNgayKham"
+                       name="ngayKham"
+                       type="date"
+                       value="@(Model.NgayKham?.ToString("yyyy-MM-dd"))"
+                       class="form-control" />
+            </div>
+            <div class="col-12 col-sm-6 col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-funnel" aria-hidden="true"></i>
+                    <span>Lọc</span>
+                </button>
+                @if (Model.CoBoLoc)
+                {
+                    <a href="/bac-si" class="btn btn-secondary flex-shrink-0" title="Xóa bộ lọc" aria-label="Xóa bộ lọc">
+                        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                    </a>
+                }
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Results Summary -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <div class="small text-muted">
+        @if (danhSach.TotalCount > 0)
+        {
+            <span>
+                Hiển thị <strong class="text-dark">@danhSach.StartItem–@danhSach.EndItem</strong>
+                trên tổng số <strong class="text-dark">@danhSach.TotalCount</strong> bác sĩ
+            </span>
+        }
+        else
+        {
+            <span>Không có bác sĩ nào phù hợp</span>
+        }
+    </div>
+
+    @if (Model.CoBoLoc)
+    {
+        <div class="d-flex flex-wrap align-items-center gap-2 small">
+            @if (!string.IsNullOrWhiteSpace(Model.TenChuyenKhoaDangLoc))
+            {
+                <span class="badge rounded-pill pk-badge-soft">
+                    Chuyên khoa: @Model.TenChuyenKhoaDangLoc
+                </span>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.TuKhoa))
+            {
+                <span class="badge rounded-pill pk-badge-soft">
+                    Từ khóa: "@Model.TuKhoa"
+                </span>
+            }
+            @if (Model.NgayKham.HasValue)
+            {
+                <span class="badge rounded-pill pk-badge-teal">
+                    Có lịch ngày: @Model.NgayKham.Value.ToString("dd/MM/yyyy")
+                </span>
+            }
+            <a href="/bac-si" class="text-decoration-none fw-medium">Xóa tất cả lọc</a>
+        </div>
+    }
+</div>
+
+@if (danhSach.Items.Count == 0)
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-person-badge fs-1 text-muted opacity-50 d-block mb-3" aria-hidden="true"></i>
+            <h2 class="h5 fw-bold mb-2">Không tìm thấy bác sĩ phù hợp</h2>
+            <p class="text-muted mb-3">
+                Thử bỏ bớt điều kiện lọc hoặc chọn một ngày khám khác để xem thêm bác sĩ.
+            </p>
+            @if (Model.CoBoLoc)
+            {
+                <a href="/bac-si" class="btn btn-outline-primary">Xem tất cả bác sĩ</a>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-3 g-md-4">
+        @foreach (var doctor in danhSach.Items)
+        {
+            <div class="col-12 col-md-6 col-xl-4">
+                <partial name="_DoctorCardPartial" model="doctor" />
+            </div>
+        }
+    </div>
+
+    @if (danhSach.TotalPages > 1)
+    {
+        <nav aria-label="Phân trang danh sách bác sĩ" class="mt-4">
+            <ul class="pagination justify-content-center flex-wrap gap-1 mb-0">
+                <li class="page-item @(danhSach.HasPreviousPage ? "" : "disabled")">
+                    <a class="page-link" href="@(danhSach.HasPreviousPage ? BuildPageUrl(danhSach.PageIndex - 1) : "#")" aria-label="Trang trước">
+                        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                    </a>
+                </li>
+                @for (var i = 1; i <= danhSach.TotalPages; i++)
+                {
+                    <li class="page-item @(i == danhSach.PageIndex ? "active" : "")">
+                        <a class="page-link" href="@BuildPageUrl(i)">@i</a>
+                    </li>
+                }
+                <li class="page-item @(danhSach.HasNextPage ? "" : "disabled")">
+                    <a class="page-link" href="@(danhSach.HasNextPage ? BuildPageUrl(danhSach.PageIndex + 1) : "#")" aria-label="Trang sau">
+                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
+}

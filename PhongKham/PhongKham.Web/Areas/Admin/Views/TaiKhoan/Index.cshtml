@@ -1,0 +1,196 @@
+@model TaiKhoanAdminIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+    var ds = Model.DanhSach;
+
+    string RoleBadgeClass(string roleName) => roleName switch
+    {
+        RoleNames.Admin => "text-bg-dark",
+        RoleNames.Doctor => "pk-badge-soft",
+        RoleNames.Receptionist => "pk-badge-teal",
+        RoleNames.Patient => "pk-badge-purple",
+        _ => "text-bg-secondary"
+    };
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
+    <div>
+        <h2 class="h4 fw-bold mb-1">Quản lý tài khoản hệ thống</h2>
+        <p class="text-muted small mb-0">Tra cứu tài khoản, khóa/mở khóa truy cập và đặt lại mật khẩu.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a asp-area="Admin" asp-controller="BacSi" asp-action="Create" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-person-plus" aria-hidden="true"></i>
+            <span>Thêm bác sĩ</span>
+        </a>
+        <a asp-area="Admin" asp-controller="NhanVien" asp-action="Create" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-person-plus" aria-hidden="true"></i>
+            <span>Thêm lễ tân</span>
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body p-3">
+        <form method="get" asp-area="Admin" asp-controller="TaiKhoan" asp-action="Index" class="row g-2 align-items-center">
+            <div class="col-12 col-md">
+                <input type="search" name="tuKhoa" value="@Model.TuKhoa" class="form-control"
+                       placeholder="Tìm theo email hoặc họ tên..." aria-label="Tìm kiếm tài khoản" />
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+                <select name="roleName" class="form-select" aria-label="Lọc theo vai trò">
+                    <option value="">Tất cả vai trò</option>
+                    <option value="@RoleNames.Admin" selected="@(Model.RoleName == RoleNames.Admin)">Quản trị viên</option>
+                    <option value="@RoleNames.Receptionist" selected="@(Model.RoleName == RoleNames.Receptionist)">Lễ tân</option>
+                    <option value="@RoleNames.Doctor" selected="@(Model.RoleName == RoleNames.Doctor)">Bác sĩ</option>
+                    <option value="@RoleNames.Patient" selected="@(Model.RoleName == RoleNames.Patient)">Bệnh nhân</option>
+                </select>
+            </div>
+            <div class="col-12 col-sm-6 col-md-2">
+                <select name="trangThai" class="form-select" aria-label="Lọc theo trạng thái">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="true" selected="@(Model.TrangThai == true)">Đang hoạt động</option>
+                    <option value="false" selected="@(Model.TrangThai == false)">Đã khóa</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-auto d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1 flex-md-grow-0">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <span>Tìm kiếm</span>
+                </button>
+                @if (Model.CoBoLoc)
+                {
+                    <a asp-area="Admin" asp-controller="TaiKhoan" asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                        <span>Đặt lại</span>
+                    </a>
+                }
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">Danh sách tài khoản</span>
+        <span class="small text-muted">Tổng: <strong class="text-dark">@ds.TotalCount</strong> tài khoản</span>
+    </div>
+    @if (ds.Items.Count == 0)
+    {
+        <div class="card-body text-center py-5">
+            <i class="bi bi-people fs-1 text-muted opacity-50 d-block mb-2" aria-hidden="true"></i>
+            <p class="text-muted mb-0">Không có tài khoản nào phù hợp.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 pk-price-table">
+                <thead>
+                    <tr>
+                        <th>Tài khoản</th>
+                        <th style="width: 140px;">Vai trò</th>
+                        <th style="width: 150px;">Ngày tạo</th>
+                        <th style="width: 160px;">Đăng nhập cuối</th>
+                        <th style="width: 140px;">Trạng thái</th>
+                        <th class="text-end" style="width: 260px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in ds.Items)
+                    {
+                        var isSelf = item.Id == Model.CurrentAdminUserId;
+                        <tr>
+                            <td>
+                                <div class="fw-semibold text-dark">
+                                    @item.FullName
+                                    @if (isSelf)
+                                    {
+                                        <span class="badge rounded-pill text-bg-info ms-1">Bạn</span>
+                                    }
+                                </div>
+                                <div class="small text-muted">@item.Email</div>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill @RoleBadgeClass(item.RoleName)">@item.TenVaiTro</span>
+                            </td>
+                            <td class="small text-nowrap">@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="small text-nowrap text-muted">
+                                @(item.LastLoginAt.HasValue ? item.LastLoginAt.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa đăng nhập")
+                            </td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge rounded-pill text-bg-success">Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="badge rounded-pill text-bg-danger">Đã khóa</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex flex-wrap justify-content-end gap-1">
+                                    <a asp-area="Admin" asp-controller="TaiKhoan" asp-action="DatLaiMatKhau" asp-route-id="@item.Id"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-key" aria-hidden="true"></i>
+                                        <span>Đặt lại MK</span>
+                                    </a>
+                                    @if (!isSelf)
+                                    {
+                                        <form method="post" asp-area="Admin" asp-controller="TaiKhoan" asp-action="DoiTrangThai" class="d-inline">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <input type="hidden" name="isActive" value="@(item.IsActive ? "false" : "true")" />
+                                            <input type="hidden" name="tuKhoa" value="@Model.TuKhoa" />
+                                            <input type="hidden" name="roleName" value="@Model.RoleName" />
+                                            <input type="hidden" name="trangThai" value="@(Model.TrangThai.HasValue ? (Model.TrangThai.Value ? "true" : "false") : "")" />
+                                            <input type="hidden" name="page" value="@ds.PageIndex" />
+                                            @if (item.IsActive)
+                                            {
+                                                <button type="submit" class="btn btn-sm btn-danger"
+                                                        data-confirm="Bạn có chắc chắn muốn khóa tài khoản '@item.Email'? Người dùng này sẽ không thể đăng nhập."
+                                                        data-confirm-title="Khóa tài khoản"
+                                                        data-confirm-btn="Khóa tài khoản"
+                                                        data-confirm-variant="danger">
+                                                    <i class="bi bi-lock" aria-hidden="true"></i>
+                                                    <span>Khóa</span>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="submit" class="btn btn-sm btn-success"
+                                                        data-confirm="Mở khóa tài khoản '@item.Email'?"
+                                                        data-confirm-title="Mở khóa tài khoản"
+                                                        data-confirm-btn="Mở khóa"
+                                                        data-confirm-variant="success">
+                                                    <i class="bi bi-unlock" aria-hidden="true"></i>
+                                                    <span>Mở khóa</span>
+                                                </button>
+                                            }
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<partial name="_AdminPaginationPartial" model="@(new AdminPaginationViewModel
+{
+    PageIndex = ds.PageIndex,
+    TotalPages = ds.TotalPages,
+    TotalCount = ds.TotalCount,
+    StartItem = ds.StartItem,
+    EndItem = ds.EndItem,
+    ItemLabel = "tài khoản",
+    Controller = "TaiKhoan",
+    RouteValues = new Dictionary<string, string?>
+    {
+        ["tuKhoa"] = Model.TuKhoa,
+        ["roleName"] = Model.RoleName,
+        ["trangThai"] = Model.TrangThai?.ToString()
+    }
+})" />

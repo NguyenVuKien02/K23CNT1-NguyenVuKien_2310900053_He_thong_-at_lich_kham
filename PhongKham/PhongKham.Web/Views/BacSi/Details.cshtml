@@ -1,0 +1,310 @@
+@model PhongKham.Web.ViewModels.Public.BacSiDetailsViewModel
+@{
+    ViewData["Title"] = Model.DisplayName;
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+    var isPatient = isAuthenticated && User.IsInRole(RoleNames.Patient);
+
+    string BuildBookingHref(DateOnly? ngay = null)
+    {
+        var target = $"/BenhNhan/LichHen/DatLich?doctorId={Model.Id}&specialtyId={Model.SpecialtyId}";
+        if (ngay.HasValue)
+        {
+            target += $"&ngay={ngay.Value:yyyy-MM-dd}";
+        }
+
+        return isPatient
+            ? target
+            : $"/Account/Login?returnUrl={Uri.EscapeDataString(target)}";
+    }
+
+    var groupedSchedules = Model.LichLamViecSapToi
+        .GroupBy(l => l.NgayLam)
+        .OrderBy(g => g.Key)
+        .ToList();
+}
+
+<nav aria-label="Breadcrumb" class="mb-3">
+    <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="/bac-si" class="text-decoration-none">Bác sĩ</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@Model.DisplayName</li>
+    </ol>
+</nav>
+
+<!-- Doctor Profile Header -->
+<section class="card pk-doctor-detail-hero mb-4">
+    <div class="card-body p-4 p-lg-5">
+        <div class="row align-items-center gy-4">
+            <div class="col-12 col-md-auto text-center text-md-start">
+                @if (!string.IsNullOrWhiteSpace(Model.AvatarUrl))
+                {
+                    <img src="@Model.AvatarUrl" alt="Ảnh bác sĩ @Model.FullName" class="pk-doctor-avatar-lg" />
+                }
+                else
+                {
+                    <div class="pk-doctor-avatar-lg pk-doctor-avatar-fallback mx-auto mx-md-0" aria-hidden="true">
+                        @Model.Initials
+                    </div>
+                }
+            </div>
+
+            <div class="col-12 col-md">
+                <div class="mb-2">
+                    <a href="/bac-si?chuyenKhoaId=@Model.SpecialtyId" class="pk-specialty-pill text-decoration-none">
+                        <i class="bi bi-heart-pulse" aria-hidden="true"></i>
+                        <span>@Model.SpecialtyName</span>
+                    </a>
+                </div>
+                <h1 class="h3 fw-bold mb-2">@Model.DisplayName</h1>
+                <div class="mb-3">
+                    <partial name="_StarRatingPartial" model="(Model.DiemDanhGiaTrungBinh, Model.SoLuotDanhGia)" />
+                </div>
+
+                <div class="d-flex flex-wrap gap-3 text-muted small">
+                    @if (Model.ExperienceYears.HasValue && Model.ExperienceYears.Value > 0)
+                    {
+                        <span class="d-inline-flex align-items-center gap-1">
+                            <i class="bi bi-briefcase text-primary" aria-hidden="true"></i>
+                            <span>@Model.ExperienceYears năm kinh nghiệm</span>
+                        </span>
+                    }
+                    @if (Model.Gender.HasValue)
+                    {
+                        <span class="d-inline-flex align-items-center gap-1">
+                            <i class="bi bi-person text-primary" aria-hidden="true"></i>
+                            <span>Giới tính: @EnumDisplayHelper.TenGioiTinh(Model.Gender)</span>
+                        </span>
+                    }
+                    <span class="d-inline-flex align-items-center gap-1">
+                        <i class="bi bi-cash-coin text-primary" aria-hidden="true"></i>
+                        <span>Phí khám: <strong class="text-primary">@Model.ConsultationFee.ToString("N0") đ</strong></span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-auto">
+                <div class="d-grid gap-2">
+                    @if (!isAuthenticated || isPatient)
+                    {
+                        <a href="@BuildBookingHref()" class="btn btn-primary px-4">
+                            <i class="bi bi-calendar-plus" aria-hidden="true"></i>
+                            <span>Đặt lịch khám với bác sĩ</span>
+                        </a>
+                    }
+                    <a href="/bac-si" class="btn btn-secondary px-4">
+                        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                        <span>Quay lại danh sách</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="row g-4">
+    <!-- Left column: Bio & Reviews -->
+    <div class="col-12 col-lg-8">
+        <!-- Biography -->
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h2 class="h5 fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-person-lines-fill text-primary" aria-hidden="true"></i>
+                    <span>Giới thiệu bác sĩ</span>
+                </h2>
+                @if (!string.IsNullOrWhiteSpace(Model.Bio))
+                {
+                    <p class="mb-3 lh-lg" style="white-space: pre-line;">@Model.Bio</p>
+                }
+                else
+                {
+                    <p class="text-muted mb-3">
+                        Bác sĩ chuyên khoa @Model.SpecialtyName hiện đang công tác và trực tiếp thăm khám tại Phòng Khám Đa Khoa.
+                    </p>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Model.SpecialtyDescription))
+                {
+                    <div class="p-3 rounded bg-light border">
+                        <div class="fw-semibold small text-primary mb-1">Chuyên khoa @Model.SpecialtyName</div>
+                        <p class="text-muted small mb-0">@Model.SpecialtyDescription</p>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <!-- Reviews -->
+        <section class="card" id="danh-gia">
+            <div class="card-body p-4">
+                <h2 class="h5 fw-bold mb-4 d-flex align-items-center gap-2">
+                    <i class="bi bi-star-fill text-warning" aria-hidden="true"></i>
+                    <span>Đánh giá từ bệnh nhân</span>
+                </h2>
+
+                <!-- Rating Summary -->
+                <div class="row g-4 align-items-center pb-4 mb-4 border-bottom">
+                    <div class="col-12 col-sm-4 text-center">
+                        <div class="display-5 fw-bold text-dark lh-1 mb-2">
+                            @(Model.SoLuotDanhGia > 0 ? Model.DiemDanhGiaTrungBinh.ToString("0.0") : "0,0")
+                        </div>
+                        <div class="mb-1">
+                            <partial name="_StarRatingPartial" model="(Model.DiemDanhGiaTrungBinh, Model.SoLuotDanhGia)" />
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-8">
+                        @for (var star = 5; star >= 1; star--)
+                        {
+                            var count = Model.PhanBoSoSao.TryGetValue(star, out var value) ? value : 0;
+                            var percent = Model.SoLuotDanhGia == 0 ? 0 : (int)Math.Round(count * 100.0 / Model.SoLuotDanhGia);
+                            <div class="d-flex align-items-center gap-2 mb-2 small">
+                                <span class="text-nowrap fw-medium" style="width: 44px;">@star sao</span>
+                                <div class="progress flex-grow-1" style="height: 8px;" role="progressbar" aria-valuenow="@percent" aria-valuemin="0" aria-valuemax="100" aria-label="@star sao: @count đánh giá">
+                                    <div class="progress-bar bg-warning" style="width: @percent%"></div>
+                                </div>
+                                <span class="text-muted text-end" style="width: 32px;">@count</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @if (Model.DanhGia.Items.Count == 0)
+                {
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-chat-square-heart fs-2 d-block mb-2 opacity-50" aria-hidden="true"></i>
+                        <p class="mb-0">Chưa có đánh giá nào cho bác sĩ này.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var review in Model.DanhGia.Items)
+                        {
+                            <article class="pk-review-item p-3 rounded border bg-white">
+                                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                                    <div>
+                                        <div class="fw-semibold text-dark">@review.TenBenhNhan</div>
+                                        <div class="pk-rating-stars small" aria-label="@review.SoSao trên 5 sao">
+                                            @for (var i = 1; i <= 5; i++)
+                                            {
+                                                if (i <= review.SoSao)
+                                                {
+                                                    <i class="bi bi-star-fill" aria-hidden="true"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-star text-secondary opacity-50" aria-hidden="true"></i>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <time class="small text-muted" datetime="@review.NgayDanhGia.ToString("yyyy-MM-dd")">
+                                        @review.NgayDanhGia.ToString("dd/MM/yyyy")
+                                    </time>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(review.NhanXet))
+                                {
+                                    <p class="mb-0 text-dark small lh-base">@review.NhanXet</p>
+                                }
+                                else
+                                {
+                                    <p class="mb-0 text-muted fst-italic small">Bệnh nhân đã đánh giá @review.SoSao sao.</p>
+                                }
+                            </article>
+                        }
+                    </div>
+
+                    @if (Model.DanhGia.TotalPages > 1)
+                    {
+                        <nav aria-label="Phân trang đánh giá" class="mt-4">
+                            <ul class="pagination justify-content-center flex-wrap gap-1 mb-0">
+                                <li class="page-item @(Model.DanhGia.HasPreviousPage ? "" : "disabled")">
+                                    <a class="page-link" href="@(Model.DanhGia.HasPreviousPage ? $"/bac-si/{Model.Id}?reviewPage={Model.DanhGia.PageIndex - 1}#danh-gia" : "#")" aria-label="Trang đánh giá trước">
+                                        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                                    </a>
+                                </li>
+                                @for (var i = 1; i <= Model.DanhGia.TotalPages; i++)
+                                {
+                                    <li class="page-item @(i == Model.DanhGia.PageIndex ? "active" : "")">
+                                        <a class="page-link" href="/bac-si/@Model.Id?reviewPage=@i#danh-gia">@i</a>
+                                    </li>
+                                }
+                                <li class="page-item @(Model.DanhGia.HasNextPage ? "" : "disabled")">
+                                    <a class="page-link" href="@(Model.DanhGia.HasNextPage ? $"/bac-si/{Model.Id}?reviewPage={Model.DanhGia.PageIndex + 1}#danh-gia" : "#")" aria-label="Trang đánh giá sau">
+                                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    }
+                }
+            </div>
+        </section>
+    </div>
+
+    <!-- Right column: Upcoming Schedule -->
+    <div class="col-12 col-lg-4">
+        <aside class="card pk-sticky-sidebar">
+            <div class="card-body p-4">
+                <h2 class="h5 fw-bold mb-1 d-flex align-items-center gap-2">
+                    <i class="bi bi-calendar3 text-primary" aria-hidden="true"></i>
+                    <span>Lịch làm việc sắp tới</span>
+                </h2>
+                <p class="text-muted small mb-3">Trong 14 ngày tới tại phòng khám</p>
+
+                @if (groupedSchedules.Count == 0)
+                {
+                    <div class="text-center py-4 px-2 rounded bg-light border text-muted small">
+                        <i class="bi bi-calendar-x fs-3 d-block mb-2 opacity-50" aria-hidden="true"></i>
+                        <p class="mb-0">Hiện chưa có lịch làm việc được phân công trong 14 ngày tới.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var dayGroup in groupedSchedules)
+                        {
+                            var ngay = dayGroup.Key;
+                            <div class="p-3 rounded border bg-light">
+                                <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                                    <span class="fw-semibold small text-dark">
+                                        @EnumDisplayHelper.TenThuTrongTuan(ngay.DayOfWeek), @ngay.ToString("dd/MM/yyyy")
+                                    </span>
+                                    @if (!isAuthenticated || isPatient)
+                                    {
+                                        <a href="@BuildBookingHref(ngay)" class="small fw-semibold text-decoration-none">
+                                            Đặt lịch <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                                        </a>
+                                    }
+                                </div>
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach (var ca in dayGroup)
+                                    {
+                                        <span class="badge rounded-pill pk-shift-pill">
+                                            <i class="bi bi-clock me-1" aria-hidden="true"></i>
+                                            @ca.TenCa: @ca.GioBatDau.ToString("HH:mm")–@ca.GioKetThuc.ToString("HH:mm")
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <div class="mt-4 pt-3 border-top">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted small">Phí khám tham khảo</span>
+                        <span class="fs-5 fw-bold text-primary">@Model.ConsultationFee.ToString("N0") đ</span>
+                    </div>
+                    @if (!isAuthenticated || isPatient)
+                    {
+                        <div class="d-grid">
+                            <a href="@BuildBookingHref()" class="btn btn-primary">
+                                <i class="bi bi-calendar-check" aria-hidden="true"></i>
+                                <span>Đặt lịch khám ngay</span>
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>

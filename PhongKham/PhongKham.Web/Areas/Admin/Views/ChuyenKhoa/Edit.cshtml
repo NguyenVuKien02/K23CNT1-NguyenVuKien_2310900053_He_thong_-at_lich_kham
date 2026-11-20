@@ -1,0 +1,53 @@
+@model ChuyenKhoaFormViewModel
+@{
+    ViewData["Title"] = "Cập nhật chuyên khoa";
+}
+
+<div class="mb-3">
+    <a asp-area="Admin" asp-controller="ChuyenKhoa" asp-action="Index" class="btn btn-secondary btn-sm">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        <span>Quay lại danh sách</span>
+    </a>
+</div>
+
+<div class="card" style="max-width: 720px;">
+    <div class="card-header bg-white py-3">
+        <h2 class="h5 fw-bold mb-0">Cập nhật chuyên khoa</h2>
+    </div>
+    <div class="card-body p-4">
+        <form method="post" asp-area="Admin" asp-controller="ChuyenKhoa" asp-action="Edit" novalidate>
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label fw-medium"></label>
+                <span class="text-danger">*</span>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label fw-medium"></label>
+                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                <span asp-validation-for="Description" class="text-danger small"></span>
+            </div>
+
+            <div class="form-check form-switch mb-4">
+                <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
+                <label asp-for="IsActive" class="form-check-label"></label>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg" aria-hidden="true"></i>
+                    <span>Lưu thay đổi</span>
+                </button>
+                <a asp-area="Admin" asp-controller="ChuyenKhoa" asp-action="Index" class="btn btn-secondary">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,120 @@
+@model BacSiEditViewModel
+@{
+    ViewData["Title"] = "Cập nhật thông tin bác sĩ";
+}
+
+<div class="mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <a asp-area="Admin" asp-controller="BacSi" asp-action="Index" class="btn btn-secondary btn-sm">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        <span>Quay lại danh sách</span>
+    </a>
+    <a asp-area="Admin" asp-controller="TaiKhoan" asp-action="DatLaiMatKhau" asp-route-id="@Model.UserId"
+       class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-key" aria-hidden="true"></i>
+        <span>Đặt lại mật khẩu tài khoản</span>
+    </a>
+</div>
+
+<div class="card" style="max-width: 920px;">
+    <div class="card-header bg-white py-3">
+        <h2 class="h5 fw-bold mb-0">Cập nhật hồ sơ bác sĩ</h2>
+    </div>
+    <div class="card-body p-4">
+        <form method="post" asp-area="Admin" asp-controller="BacSi" asp-action="Edit" novalidate>
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="UserId" />
+            <input type="hidden" asp-for="Email" />
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label asp-for="Email" class="form-label fw-medium"></label>
+                    <input value="@Model.Email" class="form-control bg-light" readonly disabled />
+                </div>
+                <div class="col-12 col-md-6">
+                    <label asp-for="SpecialtyId" class="form-label fw-medium"></label>
+                    <span class="text-danger">*</span>
+                    <select asp-for="SpecialtyId" asp-items="Model.ChuyenKhoaOptions" class="form-select">
+                        <option value="">-- Chọn chuyên khoa --</option>
+                    </select>
+                    <span asp-validation-for="SpecialtyId" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label asp-for="FullName" class="form-label fw-medium"></label>
+                    <span class="text-danger">*</span>
+                    <input asp-for="FullName" class="form-control" />
+                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label asp-for="Gender" class="form-label fw-medium"></label>
+                    <select asp-for="Gender" class="form-select">
+                        <option value="">-- Chọn --</option>
+                        <option value="@GioiTinh.Nam">Nam</option>
+                        <option value="@GioiTinh.Nu">Nữ</option>
+                        <option value="@GioiTinh.Khac">Khác</option>
+                    </select>
+                    <span asp-validation-for="Gender" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label asp-for="DateOfBirth" class="form-label fw-medium"></label>
+                    <input asp-for="DateOfBirth" asp-format="{0:yyyy-MM-dd}" type="date" class="form-control" />
+                    <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <label asp-for="Phone" class="form-label fw-medium"></label>
+                    <input asp-for="Phone" class="form-control" />
+                    <span asp-validation-for="Phone" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label asp-for="Degree" class="form-label fw-medium"></label>
+                    <input asp-for="Degree" class="form-control" />
+                    <span asp-validation-for="Degree" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label asp-for="ExperienceYears" class="form-label fw-medium"></label>
+                    <input asp-for="ExperienceYears" type="number" min="0" max="80" class="form-control" />
+                    <span asp-validation-for="ExperienceYears" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <label asp-for="ConsultationFee" class="form-label fw-medium"></label>
+                    <span class="text-danger">*</span>
+                    <input asp-for="ConsultationFee" asp-format="{0:0}" type="number" min="0" step="10000" class="form-control" />
+                    <span asp-validation-for="ConsultationFee" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-8">
+                    <label asp-for="AvatarUrl" class="form-label fw-medium"></label>
+                    <input asp-for="AvatarUrl" class="form-control" />
+                    <span asp-validation-for="AvatarUrl" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="Bio" class="form-label fw-medium"></label>
+                    <textarea asp-for="Bio" class="form-control" rows="4"></textarea>
+                    <span asp-validation-for="Bio" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
+                        <label asp-for="IsActive" class="form-check-label"></label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg" aria-hidden="true"></i>
+                    <span>Lưu thay đổi</span>
+                </button>
+                <a asp-area="Admin" asp-controller="BacSi" asp-action="Index" class="btn btn-secondary">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

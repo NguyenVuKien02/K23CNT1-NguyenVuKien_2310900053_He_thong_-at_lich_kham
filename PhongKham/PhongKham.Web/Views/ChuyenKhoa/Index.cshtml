@@ -1,0 +1,127 @@
+@model PhongKham.Web.ViewModels.Public.ChuyenKhoaIndexViewModel
+@{
+    ViewData["Title"] = "Chuyên khoa";
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+    var isPatient = isAuthenticated && User.IsInRole(RoleNames.Patient);
+}
+
+<nav aria-label="Breadcrumb" class="mb-3">
+    <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Trang chủ</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Chuyên khoa</li>
+    </ol>
+</nav>
+
+<div class="pk-page-header mb-4">
+    <div class="row align-items-end gy-3">
+        <div class="col-lg-7">
+            <h1 class="h3 fw-bold mb-1">Danh sách chuyên khoa</h1>
+            <p class="text-muted mb-0">
+                Khám phá các chuyên khoa đang hoạt động tại phòng khám và lựa chọn bác sĩ phù hợp.
+            </p>
+        </div>
+        <div class="col-lg-5">
+            <form method="get" action="/chuyen-khoa" class="d-flex gap-2">
+                <input type="search"
+                       name="tuKhoa"
+                       value="@Model.TuKhoa"
+                       class="form-control"
+                       placeholder="Tìm theo tên hoặc mô tả chuyên khoa..."
+                       aria-label="Tìm kiếm chuyên khoa" />
+                <button type="submit" class="btn btn-primary flex-shrink-0">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <span class="d-none d-sm-inline">Tìm kiếm</span>
+                </button>
+                @if (!string.IsNullOrWhiteSpace(Model.TuKhoa))
+                {
+                    <a href="/chuyen-khoa" class="btn btn-secondary flex-shrink-0" aria-label="Xóa bộ lọc">
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </a>
+                }
+            </form>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.TuKhoa))
+{
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 small text-muted">
+        <span>
+            Tìm thấy <strong class="text-dark">@Model.ChuyenKhoas.Count</strong> chuyên khoa cho từ khóa
+            <strong class="text-dark">"@Model.TuKhoa"</strong>.
+        </span>
+        <a href="/chuyen-khoa" class="text-decoration-none">Xem tất cả chuyên khoa</a>
+    </div>
+}
+
+@if (Model.ChuyenKhoas.Count == 0)
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-hospital fs-1 text-muted opacity-50 d-block mb-3" aria-hidden="true"></i>
+            <h2 class="h5 fw-bold mb-2">Không tìm thấy chuyên khoa phù hợp</h2>
+            <p class="text-muted mb-3">
+                @if (!string.IsNullOrWhiteSpace(Model.TuKhoa))
+                {
+                    <span>Không có chuyên khoa nào khớp với từ khóa "@Model.TuKhoa".</span>
+                }
+                else
+                {
+                    <span>Hiện chưa có chuyên khoa nào được kích hoạt trên hệ thống.</span>
+                }
+            </p>
+            @if (!string.IsNullOrWhiteSpace(Model.TuKhoa))
+            {
+                <a href="/chuyen-khoa" class="btn btn-outline-primary">Xem tất cả chuyên khoa</a>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-3 g-md-4">
+        @foreach (var ck in Model.ChuyenKhoas)
+        {
+            var datLichUrl = $"/BenhNhan/LichHen/DatLich?specialtyId={ck.Id}";
+            var bookingHref = isPatient
+                ? datLichUrl
+                : $"/Account/Login?returnUrl={Uri.EscapeDataString(datLichUrl)}";
+
+            <div class="col-12 col-md-6 col-lg-4">
+                <article class="card pk-specialty-card h-100">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                            <div class="pk-specialty-icon" aria-hidden="true">
+                                <i class="bi bi-heart-pulse-fill"></i>
+                            </div>
+                            <span class="badge rounded-pill pk-badge-soft">
+                                @ck.SoBacSi bác sĩ
+                            </span>
+                        </div>
+
+                        <h2 class="h5 fw-bold mb-2 text-dark">@ck.Name</h2>
+                        <p class="text-muted small mb-4 flex-grow-1">
+                            @(string.IsNullOrWhiteSpace(ck.Description)
+                                ? "Chuyên khoa thăm khám, chẩn đoán và tư vấn điều trị chuyên sâu."
+                                : ck.Description)
+                        </p>
+
+                        <div class="d-grid d-sm-flex gap-2 mt-auto pt-3 border-top">
+                            <a href="/bac-si?chuyenKhoaId=@ck.Id" class="btn btn-outline-primary flex-sm-fill">
+                                <i class="bi bi-people" aria-hidden="true"></i>
+                                <span>Xem bác sĩ</span>
+                            </a>
+                            @if (!isAuthenticated || isPatient)
+                            {
+                                <a href="@bookingHref" class="btn btn-primary flex-sm-fill">
+                                    <i class="bi bi-calendar-plus" aria-hidden="true"></i>
+                                    <span>Đặt lịch</span>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </article>
+            </div>
+        }
+    </div>
+}

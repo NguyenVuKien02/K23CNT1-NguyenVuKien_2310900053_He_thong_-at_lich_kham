@@ -176,9 +176,42 @@
         window.pkConfirm = showConfirm;
     }
 
+    // Quick search: filter doctor suggestions by selected specialty
+    function initQuickSearchSuggestions() {
+        var specialtySelect = document.getElementById('quickChuyenKhoa');
+        var datalist = document.getElementById('pkDoctorSuggestions');
+        if (!specialtySelect || !datalist) {
+            return;
+        }
+
+        var allOptions = Array.prototype.slice.call(datalist.querySelectorAll('option')).map(function (opt) {
+            return {
+                value: opt.value,
+                text: opt.textContent,
+                specialtyId: opt.dataset.specialtyId || ''
+            };
+        });
+
+        specialtySelect.addEventListener('change', function () {
+            var selectedId = specialtySelect.value;
+            datalist.innerHTML = '';
+
+            allOptions.forEach(function (item) {
+                if (!selectedId || item.specialtyId === selectedId) {
+                    var option = document.createElement('option');
+                    option.value = item.value;
+                    option.textContent = item.text;
+                    option.dataset.specialtyId = item.specialtyId;
+                    datalist.appendChild(option);
+                }
+            });
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         initToasts();
         initStaffSidebar();
         initConfirmModal();
+        initQuickSearchSuggestions();
     });
 })();

@@ -1,0 +1,121 @@
+@model PhongKham.Web.ViewModels.Account.RegisterViewModel
+@{
+    ViewData["Title"] = "Đăng ký tài khoản";
+}
+
+<div class="row justify-content-center py-3 py-md-4">
+    <div class="col-12 col-md-9 col-lg-7 col-xl-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+                         style="width: 56px; height: 56px; background-color: var(--pk-primary-soft); color: var(--pk-primary);">
+                        <i class="bi bi-person-plus-fill fs-3" aria-hidden="true"></i>
+                    </div>
+                    <h1 class="h4 fw-bold mb-1">Đăng ký tài khoản bệnh nhân</h1>
+                    <p class="text-muted small mb-0">Tạo tài khoản để đặt lịch khám trực tuyến và theo dõi hồ sơ sức khỏe</p>
+                </div>
+
+                @if (!ViewData.ModelState.IsValid && ViewData.ModelState[string.Empty]?.Errors.Count > 0)
+                {
+                    <div class="alert alert-danger d-flex align-items-start gap-2" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill flex-shrink-0 mt-1" aria-hidden="true"></i>
+                        <div asp-validation-summary="ModelOnly" class="mb-0"></div>
+                    </div>
+                }
+
+                <form asp-action="Register" asp-controller="Account" method="post" novalidate>
+                    @Html.AntiForgeryToken()
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="FullName" class="form-label fw-medium">
+                                Họ và tên <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="FullName" class="form-control" autocomplete="name" placeholder="Nguyễn Văn A" />
+                            <span asp-validation-for="FullName" class="text-danger small d-block mt-1"></span>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <label asp-for="Email" class="form-label fw-medium">
+                                Email <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Email" class="form-control" autocomplete="email" placeholder="example@email.com" />
+                            <span asp-validation-for="Email" class="text-danger small d-block mt-1"></span>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <label asp-for="Phone" class="form-label fw-medium">Số điện thoại</label>
+                            <input asp-for="Phone" class="form-control" autocomplete="tel" placeholder="0901234567" />
+                            <span asp-validation-for="Phone" class="text-danger small d-block mt-1"></span>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <label asp-for="DateOfBirth" class="form-label fw-medium">Ngày sinh</label>
+                            <input asp-for="DateOfBirth" type="date" class="form-control" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="DateOfBirth" class="text-danger small d-block mt-1"></span>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <label asp-for="Gender" class="form-label fw-medium">Giới tính</label>
+                            <select asp-for="Gender" class="form-select">
+                                <option value="">-- Chọn giới tính --</option>
+                                <option value="@GioiTinh.Nam">Nam</option>
+                                <option value="@GioiTinh.Nu">Nữ</option>
+                                <option value="@GioiTinh.Khac">Khác</option>
+                            </select>
+                            <span asp-validation-for="Gender" class="text-danger small d-block mt-1"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Address" class="form-label fw-medium">Địa chỉ</label>
+                            <input asp-for="Address" class="form-control" autocomplete="street-address" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" />
+                            <span asp-validation-for="Address" class="text-danger small d-block mt-1"></span>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <label asp-for="Password" class="form-label fw-medium">
+                                Mật khẩu <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Password" class="form-control" autocomplete="new-password" placeholder="Tối thiểu 8 ký tự" />
+                            <span asp-validation-for="Password" class="text-danger small d-block mt-1"></span>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <label asp-for="ConfirmPassword" class="form-label fw-medium">
+                                Xác nhận mật khẩu <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" placeholder="Nhập lại mật khẩu" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small d-block mt-1"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+                                Mật khẩu phải có ít nhất 8 ký tự, bao gồm cả chữ cái và chữ số.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-person-check" aria-hidden="true"></i>
+                            <span>Đăng ký tài khoản</span>
+                        </button>
+                    </div>
+                </form>
+
+                <hr class="my-4" />
+
+                <p class="text-center text-muted mb-0">
+                    Đã có tài khoản?
+                    <a asp-action="Login" asp-controller="Account" class="fw-semibold text-decoration-none">Đăng nhập ngay</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

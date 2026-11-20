@@ -1,0 +1,77 @@
+@model PhongKham.Web.ViewModels.Public.BacSiCardViewModel
+@{
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+    var isPatient = isAuthenticated && User.IsInRole(RoleNames.Patient);
+    var datLichUrl = $"/BenhNhan/LichHen/DatLich?doctorId={Model.Id}&specialtyId={Model.SpecialtyId}";
+    var bookingHref = isPatient
+        ? datLichUrl
+        : $"/Account/Login?returnUrl={Uri.EscapeDataString(datLichUrl)}";
+}
+
+<article class="card pk-doctor-card h-100">
+    <div class="card-body d-flex flex-column p-4">
+        <div class="d-flex align-items-start gap-3 mb-3">
+            @if (!string.IsNullOrWhiteSpace(Model.AvatarUrl))
+            {
+                <img src="@Model.AvatarUrl" alt="Ảnh bác sĩ @Model.FullName" class="pk-doctor-avatar flex-shrink-0" loading="lazy" />
+            }
+            else
+            {
+                <div class="pk-doctor-avatar pk-doctor-avatar-fallback flex-shrink-0" aria-hidden="true">
+                    @Model.Initials
+                </div>
+            }
+
+            <div class="min-w-0 flex-grow-1">
+                <a href="/bac-si?chuyenKhoaId=@Model.SpecialtyId" class="pk-specialty-pill text-decoration-none mb-2">
+                    <i class="bi bi-heart-pulse" aria-hidden="true"></i>
+                    <span>@Model.SpecialtyName</span>
+                </a>
+                <h3 class="h6 fw-bold mb-1 lh-base">
+                    <a href="/bac-si/@Model.Id" class="text-decoration-none text-dark stretched-link-title">
+                        @Model.DisplayName
+                    </a>
+                </h3>
+                <partial name="_StarRatingPartial" model="(Model.DiemDanhGiaTrungBinh, Model.SoLuotDanhGia)" />
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Bio))
+        {
+            <p class="text-muted small pk-line-clamp-2 mb-3">@Model.Bio</p>
+        }
+
+        <div class="pk-doctor-meta mt-auto pt-3 border-top">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 small">
+                <span class="text-muted d-inline-flex align-items-center gap-1">
+                    <i class="bi bi-briefcase text-primary" aria-hidden="true"></i>
+                    @if (Model.ExperienceYears.HasValue && Model.ExperienceYears.Value > 0)
+                    {
+                        <span>@Model.ExperienceYears năm kinh nghiệm</span>
+                    }
+                    else
+                    {
+                        <span>Bác sĩ chuyên khoa</span>
+                    }
+                </span>
+                <span class="fw-bold text-primary">
+                    @Model.ConsultationFee.ToString("N0") đ
+                </span>
+            </div>
+
+            <div class="d-grid d-sm-flex gap-2">
+                <a href="/bac-si/@Model.Id" class="btn btn-outline-primary flex-sm-fill">
+                    <i class="bi bi-person-vcard" aria-hidden="true"></i>
+                    <span>Chi tiết</span>
+                </a>
+                @if (!isAuthenticated || isPatient)
+                {
+                    <a href="@bookingHref" class="btn btn-primary flex-sm-fill">
+                        <i class="bi bi-calendar-plus" aria-hidden="true"></i>
+                        <span>Đặt lịch</span>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</article>

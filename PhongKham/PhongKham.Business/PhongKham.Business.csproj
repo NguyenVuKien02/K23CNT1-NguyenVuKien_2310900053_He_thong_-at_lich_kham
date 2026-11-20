@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PhongKham.Data\PhongKham.Data.csproj" />
     <ProjectReference Include="..\PhongKham.Common\PhongKham.Common.csproj" />
   </ItemGroup>

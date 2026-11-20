@@ -1,0 +1,58 @@
+@model DatLaiMatKhauViewModel
+@{
+    ViewData["Title"] = "Đặt lại mật khẩu";
+}
+
+<div class="mb-3">
+    <a asp-area="Admin" asp-controller="TaiKhoan" asp-action="Index" class="btn btn-secondary btn-sm">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        <span>Quay lại danh sách tài khoản</span>
+    </a>
+</div>
+
+<div class="card" style="max-width: 640px;">
+    <div class="card-header bg-white py-3">
+        <h2 class="h5 fw-bold mb-0">Đặt lại mật khẩu tài khoản</h2>
+    </div>
+    <div class="card-body p-4">
+        <div class="alert alert-light border mb-4">
+            <div class="fw-semibold text-dark">@Model.FullName</div>
+            <div class="small text-muted">Email: <strong class="text-dark">@Model.Email</strong> • Vai trò: <strong class="text-dark">@Model.TenVaiTro</strong></div>
+        </div>
+
+        <form method="post" asp-area="Admin" asp-controller="TaiKhoan" asp-action="DatLaiMatKhau" novalidate>
+            <input type="hidden" asp-for="UserId" />
+            <input type="hidden" asp-for="Email" />
+            <input type="hidden" asp-for="FullName" />
+            <input type="hidden" asp-for="RoleName" />
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="NewPassword" class="form-label fw-medium"></label>
+                <span class="text-danger">*</span>
+                <input asp-for="NewPassword" class="form-control" autocomplete="new-password" />
+                <div class="form-text">Mật khẩu mới cần có ít nhất 8 ký tự, bao gồm cả chữ cái và chữ số.</div>
+                <span asp-validation-for="NewPassword" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="ConfirmPassword" class="form-label fw-medium"></label>
+                <span class="text-danger">*</span>
+                <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-key" aria-hidden="true"></i>
+                    <span>Đặt lại mật khẩu</span>
+                </button>
+                <a asp-area="Admin" asp-controller="TaiKhoan" asp-action="Index" class="btn btn-secondary">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

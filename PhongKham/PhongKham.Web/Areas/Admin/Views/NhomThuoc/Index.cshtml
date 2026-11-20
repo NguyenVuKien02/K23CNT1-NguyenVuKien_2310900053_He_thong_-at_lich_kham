@@ -1,0 +1,107 @@
+@model NhomThuocAdminIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý nhóm thuốc";
+    var ds = Model.DanhSach;
+}
+
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4">
+    <div>
+        <h2 class="h4 fw-bold mb-1">Danh mục nhóm thuốc</h2>
+        <p class="text-muted small mb-0">Phân loại danh mục thuốc phục vụ kê đơn và quản lý kho thuốc.</p>
+    </div>
+    <a asp-area="Admin" asp-controller="NhomThuoc" asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+        <span>Thêm nhóm thuốc</span>
+    </a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body p-3">
+        <form method="get" asp-area="Admin" asp-controller="NhomThuoc" asp-action="Index" class="row g-2 align-items-center">
+            <div class="col-12 col-md">
+                <input type="search" name="tuKhoa" value="@Model.TuKhoa" class="form-control"
+                       placeholder="Tìm theo tên hoặc mô tả nhóm thuốc..." aria-label="Tìm kiếm nhóm thuốc" />
+            </div>
+            <div class="col-12 col-md-auto d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1 flex-md-grow-0">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <span>Tìm kiếm</span>
+                </button>
+                @if (Model.CoBoLoc)
+                {
+                    <a asp-area="Admin" asp-controller="NhomThuoc" asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                        <span>Đặt lại</span>
+                    </a>
+                }
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">Danh sách nhóm thuốc</span>
+        <span class="small text-muted">Tổng: <strong class="text-dark">@ds.TotalCount</strong> nhóm thuốc</span>
+    </div>
+    @if (ds.Items.Count == 0)
+    {
+        <div class="card-body text-center py-5">
+            <i class="bi bi-collection fs-1 text-muted opacity-50 d-block mb-2" aria-hidden="true"></i>
+            <p class="text-muted mb-0">Không có nhóm thuốc nào phù hợp.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 pk-price-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">#</th>
+                        <th>Tên nhóm thuốc</th>
+                        <th>Mô tả</th>
+                        <th class="text-center" style="width: 130px;">Số lượng thuốc</th>
+                        <th class="text-end" style="width: 120px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < ds.Items.Count; i++)
+                    {
+                        var item = ds.Items[i];
+                        var stt = ds.StartItem + i;
+                        <tr>
+                            <td class="text-muted">@stt</td>
+                            <td class="fw-semibold text-dark">@item.Name</td>
+                            <td class="text-muted small">@(string.IsNullOrWhiteSpace(item.Description) ? "—" : item.Description)</td>
+                            <td class="text-center">
+                                <span class="badge rounded-pill pk-badge-soft">@item.SoThuoc</span>
+                            </td>
+                            <td class="text-end">
+                                <a asp-area="Admin" asp-controller="NhomThuoc" asp-action="Edit" asp-route-id="@item.Id"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                                    <span>Sửa</span>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<partial name="_AdminPaginationPartial" model="@(new AdminPaginationViewModel
+{
+    PageIndex = ds.PageIndex,
+    TotalPages = ds.TotalPages,
+    TotalCount = ds.TotalCount,
+    StartItem = ds.StartItem,
+    EndItem = ds.EndItem,
+    ItemLabel = "nhóm thuốc",
+    Controller = "NhomThuoc",
+    RouteValues = new Dictionary<string, string?>
+    {
+        ["tuKhoa"] = Model.TuKhoa
+    }
+})" />
