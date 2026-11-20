@@ -1,49 +1,175 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@{
+    var title = ViewData["Title"]?.ToString();
+    var pageTitle = string.IsNullOrWhiteSpace(title) ? "Phòng Khám Đa Khoa" : $"{title} - Phòng Khám Đa Khoa";
+    var currentPath = Context.Request.Path.Value ?? "/";
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+    var userName = User.Identity?.Name ?? "Tài khoản";
+}
+<!DOCTYPE html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - PhongKham.Web</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <title>@pageTitle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/PhongKham.Web.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">PhongKham.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+    <div class="pk-public-shell">
+        <header>
+            <nav class="navbar navbar-expand-lg pk-navbar sticky-top">
+                <div class="container">
+                    <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                        <i class="bi bi-hospital-fill fs-4" aria-hidden="true"></i>
+                        <span>Phòng Khám Đa Khoa</span>
+                    </a>
+
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#pkPublicNavbar"
+                            aria-controls="pkPublicNavbar" aria-expanded="false" aria-label="Mở menu điều hướng">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="pkPublicNavbar">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-lg-1">
+                            <li class="nav-item">
+                                <a class="nav-link @(currentPath == "/" ? "active" : "")"
+                                   asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentPath.StartsWith("/chuyen-khoa", StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+                                   href="/chuyen-khoa">Chuyên khoa</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentPath.StartsWith("/bac-si", StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+                                   href="/bac-si">Bác sĩ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentPath.StartsWith("/bang-gia", StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+                                   href="/bang-gia">Bảng giá</a>
+                            </li>
+                        </ul>
+
+                        <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2">
+                            @if (isAuthenticated)
+                            {
+                                if (User.IsInRole("Patient"))
+                                {
+                                    <a class="btn btn-primary" asp-area="BenhNhan" asp-controller="LichHen" asp-action="DatLich">
+                                        <i class="bi bi-calendar-plus" aria-hidden="true"></i>
+                                        <span>Đặt lịch khám</span>
+                                    </a>
+                                    <a class="pk-bell-btn" asp-area="BenhNhan" asp-controller="ThongBao" asp-action="Index" aria-label="Thông báo">
+                                        <i class="bi bi-bell fs-5" aria-hidden="true"></i>
+                                        <span class="badge rounded-pill bg-danger pk-bell-badge d-none" id="pkNotificationBadge">0</span>
+                                    </a>
+                                }
+                                else if (User.IsInRole("Admin"))
+                                {
+                                    <a class="btn btn-outline-primary" asp-area="Admin" asp-controller="ThongKe" asp-action="Index">
+                                        <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                                        <span>Quản trị</span>
+                                    </a>
+                                }
+                                else if (User.IsInRole("Receptionist"))
+                                {
+                                    <a class="btn btn-outline-primary" asp-area="LeTan" asp-controller="LichHen" asp-action="Index">
+                                        <i class="bi bi-calendar-check" aria-hidden="true"></i>
+                                        <span>Cổng lễ tân</span>
+                                    </a>
+                                }
+                                else if (User.IsInRole("Doctor"))
+                                {
+                                    <a class="btn btn-outline-primary" asp-area="BacSi" asp-controller="DanhSachCho" asp-action="Index">
+                                        <i class="bi bi-clipboard2-pulse" aria-hidden="true"></i>
+                                        <span>Cổng bác sĩ</span>
+                                    </a>
+                                }
+
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-person-circle" aria-hidden="true"></i>
+                                        <span>@userName</span>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                        @if (User.IsInRole("Patient"))
+                                        {
+                                            <li>
+                                                <a class="dropdown-item py-2" asp-area="BenhNhan" asp-controller="LichHen" asp-action="Index">
+                                                    <i class="bi bi-calendar2-week me-2" aria-hidden="true"></i>Lịch hẹn của tôi
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item py-2" asp-area="BenhNhan" asp-controller="HoSo" asp-action="Index">
+                                                    <i class="bi bi-file-medical me-2" aria-hidden="true"></i>Hồ sơ sức khỏe
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item py-2" asp-area="BenhNhan" asp-controller="HoaDon" asp-action="Index">
+                                                    <i class="bi bi-receipt me-2" aria-hidden="true"></i>Hóa đơn
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item py-2" asp-area="BenhNhan" asp-controller="TaiKhoan" asp-action="Index">
+                                                    <i class="bi bi-person-gear me-2" aria-hidden="true"></i>Thông tin cá nhân
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider" /></li>
+                                        }
+                                        <li>
+                                            <form method="post" action="/Account/Logout" class="px-2 py-1">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="dropdown-item text-danger rounded py-2">
+                                                    <i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>Đăng xuất
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+                            else
+                            {
+                                <a class="btn btn-outline-primary" href="/Account/Login">Đăng nhập</a>
+                                <a class="btn btn-primary" href="/Account/Register">Đăng ký</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <main role="main" class="pk-public-main">
+            <div class="container">
+                @RenderBody()
+            </div>
+        </main>
+
+        <footer class="pk-footer">
+            <div class="container">
+                <div class="row gy-3 align-items-center">
+                    <div class="col-md-6">
+                        <div class="fw-bold text-white mb-1">
+                            <i class="bi bi-hospital-fill me-1" aria-hidden="true"></i>Phòng Khám Đa Khoa
+                        </div>
+                        <p class="small mb-0">Hệ thống đặt lịch khám trực tuyến và quản lý hồ sơ bệnh nhân.</p>
+                    </div>
+                    <div class="col-md-6 text-md-end small">
+                        <div>Giờ làm việc: Thứ 2 - Chủ nhật (07:30 - 17:00)</div>
+                        <div class="mt-1">&copy; @DateTime.Now.Year Phòng Khám Đa Khoa. Mọi quyền được bảo lưu.</div>
+                    </div>
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+        </footer>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - PhongKham.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <partial name="_ToastPartial" />
+    <partial name="_ConfirmModalPartial" />
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

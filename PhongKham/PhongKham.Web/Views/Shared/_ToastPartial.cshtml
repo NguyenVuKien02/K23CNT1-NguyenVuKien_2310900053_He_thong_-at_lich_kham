@@ -1,0 +1,36 @@
+@{
+    var toasts = new List<(string Message, string BgClass, string CloseClass, string IconClass, string Title)>();
+
+    void AddIfPresent(string key, string bgClass, string closeClass, string iconClass, string title)
+    {
+        if (TempData[key] is string message && !string.IsNullOrWhiteSpace(message))
+        {
+            toasts.Add((message, bgClass, closeClass, iconClass, title));
+        }
+    }
+
+    AddIfPresent("Success", "text-bg-success", "btn-close-white", "bi-check-circle-fill", "Thành công");
+    AddIfPresent("Error", "text-bg-danger", "btn-close-white", "bi-exclamation-triangle-fill", "Lỗi");
+    AddIfPresent("Warning", "text-bg-warning", string.Empty, "bi-exclamation-circle-fill", "Cảnh báo");
+    AddIfPresent("Info", "text-bg-primary", "btn-close-white", "bi-info-circle-fill", "Thông báo");
+}
+
+@if (toasts.Count > 0)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3 pk-toast-container" aria-live="polite" aria-atomic="true">
+        @foreach (var item in toasts)
+        {
+            <div class="toast pk-toast @item.BgClass" role="alert" aria-live="assertive" aria-atomic="true"
+                 data-bs-autohide="true" data-bs-delay="4500" data-pk-auto-show="true">
+                <div class="d-flex align-items-start p-3">
+                    <i class="bi @item.IconClass fs-5 me-2 flex-shrink-0" aria-hidden="true"></i>
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold small mb-1">@item.Title</div>
+                        <div>@item.Message</div>
+                    </div>
+                    <button type="button" class="btn-close @item.CloseClass ms-2" data-bs-dismiss="toast" aria-label="Đóng"></button>
+                </div>
+            </div>
+        }
+    </div>
+}
